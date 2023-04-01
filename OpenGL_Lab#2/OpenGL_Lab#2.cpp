@@ -4,15 +4,14 @@
 #include <math.h>
 #include <GL/glew.h>  // Подключаем заголовок GLEW
 #include <GL/freeglut.h>
-
 #include "pipeline.h"
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
 
-GLuint VBO;
-GLuint IBO;
-GLuint gWVPLocation;
+GLuint VBO;  // Глобальная переменной для хранения указателя на буфер вершин.
+GLuint IBO;  // 
+GLuint gWVPLocation;  // 
 
 
 static const char* pVS = "                                                          \n\
@@ -44,45 +43,47 @@ void main()                                                                     
 
 static void RenderSceneCB()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);  //Очистка буфера кадра
 
     static float Scale = 0.0f;
 
     Scale += 0.1f;
-
     Pipeline p;
     p.Rotate(0.0f, Scale, 0.0f);
     p.WorldPos(0.0f, 0.0f, 3.0f);
     Vector3f CameraPos(0.0f, 0.0f, -3.0f);
     Vector3f CameraTarget(0.0f, 0.0f, 2.0f);
     Vector3f CameraUp(0.0f, 1.0f, 0.0f);
+    // Для размещения камеры мы движемся назад, вдоль отрицательного Z, затем сдвигаемся вправо и встаем прямо.
+    // Камера глядит вдоль возрастания оси Z и немного правее относительно начала координат.
+    // Вектор вверх для простоты положительный Y.
     p.SetCamera(CameraPos, CameraTarget, CameraUp);
     p.SetPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
     glUniformMatrix4fv(gWVPLocation, 1, GL_TRUE, (const GLfloat*)p.GetTrans());
 
     glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);  //Параметр GL_ARRAY_BUFFER означает, что буфер будет хранить массив вер-шин.
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);  // Этот вызов говорит конвейеру как воспринимать данные внутри буфера.
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
     glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
 
     glDisableVertexAttribArray(0);
 
-    glutSwapBuffers();
+    glutSwapBuffers();  // Просит GLUT поменять фоновый буфер и буфер кадра местами.
 }
 
 
 static void InitializeGlutCallbacks()
 {
-    glutDisplayFunc(RenderSceneCB);
+    glutDisplayFunc(RenderSceneCB);  //  Отрисовывает кадр. 
     glutIdleFunc(RenderSceneCB);
 }
 
-static void CreateVertexBuffer()
+static void CreateVertexBuffer()  // // Создаем массив из одного экземпляра структуры Vector3f. Так задается точка в середине экрана.
 {
-    Vector3f Vertices[4];
+    Vector3f Vertices[4]; // Массив содержит 4 вершины.
     Vertices[0] = Vector3f(-1.0f, -1.0f, 0.5773f);
     Vertices[1] = Vector3f(0.0f, -1.0f, -1.15475);
     Vertices[2] = Vector3f(1.0f, -1.0f, 0.5773f);
@@ -90,7 +91,7 @@ static void CreateVertexBuffer()
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), Vertices, GL_STATIC_DRAW);  //GL_STATIC_DRAW - Изменения значений буфера запрещено.
 }
 
 static void CreateIndexBuffer()
@@ -171,27 +172,31 @@ static void CompileShaders()
 
 int main(int argc, char** argv)
 {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glutInit(&argc, argv);  // Инициализируем GLUT
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);  // GLUT_DOUBLE включает двойную буферизацию и буфер цвета.
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);  // Параметры окна 
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Tutorial 13");
+    glutCreateWindow("OpenGL_Lab#2");  // Загаловок окна.
 
     InitializeGlutCallbacks();
 
-    // Must be done after glut is initialized!
-    GLenum res = glewInit();
+    GLenum res = glewInit();  // Инициализируем GLEW и проверяем на ошибки.
     if (res != GLEW_OK) {
         fprintf(stderr, "Error: '%s'\n", glewGetErrorString(res));
         return 1;
     }
-
+    // Цвет имеет 4 канала (красный, зелёный, синий, альфа-канал) 
+    // и принимает значения от 0.0 и до 1.0.
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    // Вызов выше   устанавливает цвет, который будет 
+    // использован во время очистки буфера кадра
 
     CreateVertexBuffer();
     CreateIndexBuffer();
 
     CompileShaders();
 
-    glutMainLoop();
+    glutMainLoop();// Этот вызов передаёт контроль GLUT'у, 
+    // который теперь начнёт свой собственный цикл (Вызывает функцию RenderSceneCB
+
 }

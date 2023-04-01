@@ -1,10 +1,10 @@
 #pragma once
 #include <GL/glew.h>  // Подключаем заголовок GLEW
 #include <GL/freeglut.h>
-
+#include <iostream>
 #include <math.h>
 float M_PI = 3.14159265358979323846;
-#define ToRadian(x) ((x) * M_PI / 180.0f)
+#define ToRadian(x) ((x) * M_PI / 180.0f)  // Определение функции для дальнейшего использования
 #define ToDegree(x) ((x) * 180.0f / M_PI)
 
 struct Vector3f
@@ -32,7 +32,7 @@ struct Vector3f
         return Vector3f(_x, _y, _z);
     }
 
-    Vector3f& Normalize() {
+    Vector3f& Normalize() {  // Для генерации матрицы UVN делаем вектора единичной длины.
         const float Length = sqrtf(x * x + y * y + z * z);
 
         x /= Length;
@@ -48,7 +48,7 @@ struct Vector3f
     }
 };
 
-class Matrix4f
+class Matrix4f  // Структура для матрицы 4 на 4
 {
 public:
     float m[4][4];
